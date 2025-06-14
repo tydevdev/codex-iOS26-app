@@ -19,7 +19,7 @@ struct HomeView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
                     Text("Spanish Flashcards")
@@ -47,9 +47,6 @@ struct HomeView: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(isGenerating)
 
-                    NavigationLink(destination: DeckView(deck: deck), isActive: $showDeck) {
-                        EmptyView()
-                    }
 
                     Button("Start Practice") {
                         showDeck = true
@@ -63,6 +60,9 @@ struct HomeView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
+            }
+            .navigationDestination(isPresented: $showDeck) {
+                DeckView(deck: deck)
             }
             .background(
                 LinearGradient(
