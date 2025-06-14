@@ -29,7 +29,11 @@ struct CardView: View {
                     .foregroundColor(.black)
             }
             .opacity(flipped ? 1 : 0)
-            .rotation3DEffect(.degrees(flipped ? 0 : -180), axis: (x:0, y:1, z:0))
+            // Rotate the English side an additional 180° when flipped so it reads correctly
+            .rotation3DEffect(
+                .degrees(flipped ? 180 : -180),
+                axis: (x: 0, y: 1, z: 0)
+            )
         }
         .frame(width: 300, height: 200)
         .rotation3DEffect(.degrees(flipped ? 180 : 0), axis: (x:0, y:1, z:0))
