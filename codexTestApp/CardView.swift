@@ -29,7 +29,11 @@ struct CardView: View {
                     .foregroundColor(.white)
             }
             .opacity(flipped ? 0 : 1)
-            .rotation3DEffect(.degrees(flipped ? 180 : 0), axis: (x:0, y:1, z:0))
+            .rotation3DEffect(
+                .degrees(flipped ? 180 : 0),
+                axis: (x: 0, y: 1, z: 0),
+                perspective: 0.6
+            )
 
             // English side
             Group {
@@ -52,12 +56,17 @@ struct CardView: View {
             // Rotate the English side an additional 180° when flipped so it reads correctly
             .rotation3DEffect(
                 .degrees(flipped ? 180 : -180),
-                axis: (x: 0, y: 1, z: 0)
+                axis: (x: 0, y: 1, z: 0),
+                perspective: 0.6
             )
         }
         .frame(width: 300, height: 200)
-        .rotation3DEffect(.degrees(flipped ? 180 : 0), axis: (x:0, y:1, z:0))
-        .animation(.easeInOut, value: flipped)
+        .rotation3DEffect(
+            .degrees(flipped ? 180 : 0),
+            axis: (x: 0, y: 1, z: 0),
+            perspective: 0.6
+        )
+        .animation(.easeInOut(duration: 0.6), value: flipped)
         .offset(offset)
         .gesture(
             DragGesture()
@@ -65,7 +74,7 @@ struct CardView: View {
                 .onEnded { value in
                     if abs(value.translation.width) > 100 {
                         let knewWord = value.translation.width > 0
-                        withAnimation {
+                        withAnimation(.easeInOut(duration: 0.4)) {
                             offset.width = knewWord ? 1000 : -1000
                         }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -74,7 +83,7 @@ struct CardView: View {
                             onRemoval(knewWord)
                         }
                     } else {
-                        withAnimation { offset = .zero }
+                        withAnimation(.easeInOut(duration: 0.4)) { offset = .zero }
                     }
                 }
         )
