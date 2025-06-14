@@ -6,7 +6,9 @@ The main project file is `codexTestApp.xcodeproj` and the sources reside in the
 `codexTestApp` folder.
 
 ## Features
-- Home screen to remake or start a deck of 20 random Spanish/English cards.
+- Adjustable deck size from the Home screen.
+- Generate a new deck of random Spanish/English cards for practice.
+- View a list of all available cards.
 - Tap a card to flip between languages with an animation.
 - Drag a card off screen to move to the next one.
 

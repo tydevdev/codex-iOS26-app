@@ -9,13 +9,13 @@ struct Flashcard: Identifiable {
 struct Deck {
     var cards: [Flashcard]
 
-    static func randomDeck() -> Deck {
-        let allCards: [Flashcard] = [
-            Flashcard(spanish: "hola", english: "hello"),
-            Flashcard(spanish: "adios", english: "goodbye"),
-            Flashcard(spanish: "gracias", english: "thank you"),
-            Flashcard(spanish: "por favor", english: "please"),
-            Flashcard(spanish: "si", english: "yes"),
+    /// Full list of available flashcards.
+    static let allCards: [Flashcard] = [
+        Flashcard(spanish: "hola", english: "hello"),
+        Flashcard(spanish: "adios", english: "goodbye"),
+        Flashcard(spanish: "gracias", english: "thank you"),
+        Flashcard(spanish: "por favor", english: "please"),
+        Flashcard(spanish: "si", english: "yes"),
             Flashcard(spanish: "no", english: "no"),
             Flashcard(spanish: "amigo", english: "friend"),
             Flashcard(spanish: "familia", english: "family"),
@@ -49,11 +49,15 @@ struct Deck {
             Flashcard(spanish: "invierno", english: "winter"),
             Flashcard(spanish: "hoy", english: "today"),
             Flashcard(spanish: "manana", english: "tomorrow"),
-            Flashcard(spanish: "izquierda", english: "left"),
-            Flashcard(spanish: "derecha", english: "right")
+        Flashcard(spanish: "izquierda", english: "left"),
+        Flashcard(spanish: "derecha", english: "right")
         ]
+
+    /// Create a deck with a random subset of the available cards.
+    static func randomDeck(size: Int = 20) -> Deck {
         let shuffled = allCards.shuffled()
-        let selected = Array(shuffled.prefix(20))
+        let clamped = max(1, min(size, allCards.count))
+        let selected = Array(shuffled.prefix(clamped))
         return Deck(cards: selected)
     }
 }

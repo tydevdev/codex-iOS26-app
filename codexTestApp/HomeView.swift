@@ -1,32 +1,46 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State private var deck: Deck = Deck.randomDeck()
+    @State private var deckSize: Int = 10
+    @State private var deck: Deck = Deck.randomDeck(size: 10)
     @State private var showDeck = false
-
+    
     var body: some View {
         NavigationView {
-            VStack(spacing: 30) {
-                Text("Spanish Flashcards")
-                    .font(.largeTitle.bold())
-                    .padding()
+            ScrollView {
+                VStack(spacing: 24) {
+                    Text("Spanish Flashcards")
+                        .font(.largeTitle.bold())
+                        .padding(.top)
 
-                Button("Remake Deck") {
-                    deck = Deck.randomDeck()
-                }
-                .buttonStyle(.borderedProminent)
+                    Text("Practice your vocabulary by swiping through cards. Select how many cards you'd like in this session and press Start.")
+                        .multilineTextAlignment(.center)
 
-                NavigationLink(destination: DeckView(deck: deck), isActive: $showDeck) {
-                    EmptyView()
-                }
+                    Stepper("Deck size: \(deckSize)", value: $deckSize, in: 5...Deck.allCards.count, step: 5)
+                        .padding(.horizontal)
 
-                Button("Start") {
-                    showDeck = true
+                    Button("Generate Deck") {
+                        deck = Deck.randomDeck(size: deckSize)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    NavigationLink(destination: DeckView(deck: deck), isActive: $showDeck) {
+                        EmptyView()
+                    }
+
+                    Button("Start Practice") {
+                        showDeck = true
+                    }
+                    .buttonStyle(.bordered)
+
+                    NavigationLink("View All Cards", destination: AllCardsView())
+                        .padding(.top, 10)
+
+                    Spacer(minLength: 0)
                 }
-                .buttonStyle(.bordered)
+                .padding()
+                .frame(maxWidth: .infinity)
             }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
                 LinearGradient(
                     colors: [.blue.opacity(0.4), .purple.opacity(0.6)],
