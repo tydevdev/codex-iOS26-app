@@ -11,6 +11,7 @@ The main project file is `codexTestApp.xcodeproj` and the sources reside in the
 - View a list of all available cards.
 - Tap a card to flip between languages with an animation.
 - Drag a card off screen to move to the next one.
+- Generate cards on devices with Apple Intelligence using the Foundation models.
 
 To run the project open `codexTestApp.xcodeproj` in Xcode 26 or later and build
 for the simulator or a device running iOS 26.
