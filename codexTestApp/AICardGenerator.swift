@@ -3,15 +3,19 @@ import Foundation
 #if canImport(FoundationModels)
 import FoundationModels
 
+/// Representation of a flashcard returned from the Foundation model.
 @Generable
 struct AICard: Codable {
-    @Guide(description: "Spanish word or phrase")
+    @Guide("Spanish word or phrase")
     var spanish: String
 
-    @Guide(description: "English translation of the word or phrase")
+    @Guide("English translation of the word or phrase")
     var english: String
 }
 
+/// Generator that uses `FoundationModels` to create flashcards based on a
+/// textual prompt. Falls back to a simple error when the framework isn't
+/// available.
 actor AICardGenerator {
     private let model: SystemLanguageModel
     private let session: LanguageModelSession
@@ -19,19 +23,20 @@ actor AICardGenerator {
     init() {
         let systemModel = SystemLanguageModel.default
         precondition(systemModel.isAvailable,
-                     "Foundation Model not available—needs Apple Intelligence and compatible device")
+                     "Foundation model not available—needs Apple Intelligence and compatible device")
         self.model = systemModel
         self.session = LanguageModelSession(model: systemModel)
     }
 
+    /// Generate an entire deck of cards at once.
     func generateCards(count: Int) async throws -> [Flashcard] {
         let prompt = Prompt("Generate \(count) Spanish English flashcards as short words or phrases.")
-        let response: LanguageModelSession.Response<[AICard]> =
-            try await session.respond(to: prompt, generating: [AICard].self)
-        let cards = response.output
+        let response = try await session.respond(to: prompt, generating: [AICard].self)
+        let cards = response.content
         return cards.map { Flashcard(spanish: $0.spanish, english: $0.english) }
     }
 
+    /// Stream cards as they are produced so the UI can update incrementally.
     func streamCards(count: Int) -> AsyncThrowingStream<[Flashcard], Error> {
         let prompt = Prompt("Generate \(count) Spanish English flashcards as short words or phrases.")
         let stream = session.streamResponse(to: prompt, generating: [AICard].self)
@@ -39,7 +44,7 @@ actor AICardGenerator {
             Task {
                 do {
                     for try await partial in stream {
-                        let cards = partial.output.map { Flashcard(spanish: $0.spanish, english: $0.english) }
+                        let cards = partial.content.map { Flashcard(spanish: $0.spanish, english: $0.english) }
                         continuation.yield(cards)
                     }
                     continuation.finish()
@@ -51,14 +56,26 @@ actor AICardGenerator {
     }
 }
 #else
-/// Fallback implementation used when the FoundationModels framework isn't
-/// available (e.g. when building on Linux). This simply throws an error to
-/// indicate that AI card generation isn't supported.
-struct AICardGenerator {
+/// Fallback implementation used when `FoundationModels` isn't available.
+struct AICard: Codable {
+    let spanish: String
+    let english: String
+}
+
+actor AICardGenerator {
     func generateCards(count: Int) async throws -> [Flashcard] {
         throw NSError(domain: "AICardGenerator", code: 1,
                       userInfo: [NSLocalizedDescriptionKey:
                         "FoundationModels framework not available"])
+    }
+
+    func streamCards(count: Int) -> AsyncThrowingStream<[Flashcard], Error> {
+        AsyncThrowingStream { continuation in
+            continuation.finish(throwing: NSError(
+                domain: "AICardGenerator", code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "FoundationModels framework not available"]
+            ))
+        }
     }
 }
 #endif
