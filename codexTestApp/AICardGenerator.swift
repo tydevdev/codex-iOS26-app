@@ -5,10 +5,10 @@ import FoundationModels
 
 @Generable
 struct AICard: Codable {
-    @Guide("Spanish word or phrase")
+    @Guide(description: "Spanish word or phrase")
     var spanish: String
 
-    @Guide("English translation of the word or phrase")
+    @Guide(description: "English translation of the word or phrase")
     var english: String
 }
 
@@ -26,8 +26,10 @@ actor AICardGenerator {
 
     func generateCards(count: Int) async throws -> [Flashcard] {
         let prompt = Prompt("Generate \(count) Spanish English flashcards as short words or phrases.")
-        let result: [AICard] = try await session.respond(to: prompt, generating: [AICard].self)
-        return result.map { Flashcard(spanish: $0.spanish, english: $0.english) }
+        let response: LanguageModelSession.Response<[AICard]> =
+            try await session.respond(to: prompt, generating: [AICard].self)
+        let cards = response.output
+        return cards.map { Flashcard(spanish: $0.spanish, english: $0.english) }
     }
 
     func streamCards(count: Int) -> AsyncThrowingStream<[Flashcard], Error> {
@@ -37,7 +39,7 @@ actor AICardGenerator {
             Task {
                 do {
                     for try await partial in stream {
-                        let cards = partial.content.map { Flashcard(spanish: $0.spanish, english: $0.english) }
+                        let cards = partial.output.map { Flashcard(spanish: $0.spanish, english: $0.english) }
                         continuation.yield(cards)
                     }
                     continuation.finish()
