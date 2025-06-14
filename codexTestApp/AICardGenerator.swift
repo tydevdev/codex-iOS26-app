@@ -13,16 +13,39 @@ struct AICard: Codable {
 }
 
 actor AICardGenerator {
-    private let session = LanguageModelSession()
+    private let model: SystemLanguageModel
+    private let session: LanguageModelSession
 
     init() {
-        precondition(SystemLanguageModel.default.isAvailable, "Foundation Model not available—needs Apple Intelligence and compatible device")
+        let systemModel = SystemLanguageModel.default
+        precondition(systemModel.isAvailable,
+                     "Foundation Model not available—needs Apple Intelligence and compatible device")
+        self.model = systemModel
+        self.session = LanguageModelSession(model: systemModel)
     }
 
     func generateCards(count: Int) async throws -> [Flashcard] {
-        let prompt = "Generate \(count) Spanish English flashcards as short words or phrases."
-        let aiCards: [AICard] = try await session.respond(to: prompt, generating: [AICard].self)
-        return aiCards.map { Flashcard(spanish: $0.spanish, english: $0.english) }
+        let prompt = Prompt("Generate \(count) Spanish English flashcards as short words or phrases.")
+        let result: [AICard] = try await session.respond(to: prompt, generating: [AICard].self)
+        return result.map { Flashcard(spanish: $0.spanish, english: $0.english) }
+    }
+
+    func streamCards(count: Int) -> AsyncThrowingStream<[Flashcard], Error> {
+        let prompt = Prompt("Generate \(count) Spanish English flashcards as short words or phrases.")
+        let stream = session.streamResponse(to: prompt, generating: [AICard].self)
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    for try await partial in stream {
+                        let cards = partial.content.map { Flashcard(spanish: $0.spanish, english: $0.english) }
+                        continuation.yield(cards)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
     }
 }
 #else
