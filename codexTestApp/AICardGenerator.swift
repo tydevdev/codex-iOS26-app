@@ -1,4 +1,6 @@
 import Foundation
+
+#if canImport(FoundationModels)
 import FoundationModels
 
 @Generable
@@ -23,3 +25,15 @@ actor AICardGenerator {
         return aiCards.map { Flashcard(spanish: $0.spanish, english: $0.english) }
     }
 }
+#else
+/// Fallback implementation used when the FoundationModels framework isn't
+/// available (e.g. when building on Linux). This simply throws an error to
+/// indicate that AI card generation isn't supported.
+struct AICardGenerator {
+    func generateCards(count: Int) async throws -> [Flashcard] {
+        throw NSError(domain: "AICardGenerator", code: 1,
+                      userInfo: [NSLocalizedDescriptionKey:
+                        "FoundationModels framework not available"])
+    }
+}
+#endif
